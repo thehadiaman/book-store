@@ -1,0 +1,5 @@
+{
+  "EMAIL_API": "EMAIL_API",
+  "EMAIL": "EMAIL",
+  "jswPrivateKey": "SECRET_KEY"
+}
