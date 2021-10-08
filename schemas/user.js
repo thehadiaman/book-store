@@ -1,12 +1,16 @@
 const config = require("config");
+const bcrypt = require("bcrypt");
 
 
-exports.userSchema = (body)=>{
+exports.userSchema = async(body)=>{
+
+    body.password = await bcrypt.hash(body.password, await bcrypt.genSalt(10));
+
     const schema = {
         name: body.name,
         email: body.email,
         password: body.password,
-        address: body.password,
+        address: body.address,
         phone: body.phone,
         type: body.type,
         validate: {
@@ -16,7 +20,6 @@ exports.userSchema = (body)=>{
             date: Date.now()
         }
     };
-    console.log(schema);
 
     return(schema);
 };

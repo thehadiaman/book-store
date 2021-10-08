@@ -2,6 +2,7 @@ const Joi = require('joi');
 const {User} = require("../database/users");
 const sgMail = require("@sendgrid/mail");
 const config = require("config");
+const jwt = require('jsonwebtoken');
 
 const schema = Joi.object({
     name: Joi.string().min(3).max(75).required(),
@@ -16,10 +17,15 @@ exports.validate = function (body) {
     return schema.validate(body);
 }
 
-exports.sendEmail = async(email)=>{
+exports.validateVerify = function (body){
+    const schema = Joi.object({
+        code: Joi.string().min(5).max(6).required()
+    });
+    return schema.validate(body);
+}
 
+exports.sendEmail = async(email)=>{
     let user = await User.getUser({email: email});
-    console.log(user);
 
     sgMail.setApiKey(config.get('EMAIL_API'))
     const msg = {
@@ -30,10 +36,17 @@ exports.sendEmail = async(email)=>{
         html: `<p>Your Debenger verificaton code is <u><b>${user.validate.code}</b></u>. </p>`,
     }
 
-    sgMail
+    return sgMail
         .send(msg)
         .then((data)=>console.log(data))
         .catch((error)=>console.log(error.response.body.errors[0].message))
+}
 
-    return;
+exports.generateAuthenticationToken = async function(email){
+    let user = await User.getUser({email: email});
+    console.log(user._id);
+    const payload = {_id: user._id, name: user.name, password: user.password, valid: user.validate.valid};
+    const jswPrivateKey = config.get('jswPrivateKey');
+
+    return jwt.sign(payload, jswPrivateKey);
 }
