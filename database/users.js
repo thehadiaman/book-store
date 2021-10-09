@@ -60,6 +60,18 @@ exports.User = {
                 'validate.date': Date.now()
             }
         });
+    },
+
+    addToFavorite: (_id, id)=>{
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({_id: _id},
+            {$push: {"favorites": id}}
+        )
+    },
+
+    removeFromFavorite: (_id, id)=>{
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({_id: _id},
+            {$pull: {"favorites": id}}
+        )
     }
 
 }
