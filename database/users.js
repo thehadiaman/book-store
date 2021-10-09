@@ -45,5 +45,10 @@ exports.User = {
         database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
             $set: {'validate.valid': true}
         });
+    },
+
+    userLogin: (body)=>{
+        return database().collection(databaseConfig.USER_COLLECTION).findOne({email: body.email});
     }
+
 }

@@ -58,7 +58,6 @@ exports.sendEmail = async(email)=>{
 
 exports.generateAuthenticationToken = async function(email){
     let user = await User.getUser({email: email});
-    console.log(user._id);
     const payload = {_id: user._id, name: user.name, password: user.password, valid: user.validate.valid};
     const jswPrivateKey = config.get('jswPrivateKey');
 
