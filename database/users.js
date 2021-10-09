@@ -6,7 +6,8 @@ const bcrypt = require('bcrypt');
 exports.User = {
 
     saveUser : async(body)=>{
-        const user = userSchema(body);
+        const user = await userSchema(body);
+        console.log(user);
         return database().collection(databaseConfig.USER_COLLECTION).insertOne(user)
     },
 
@@ -24,7 +25,9 @@ exports.User = {
 
         if(invalid) {
             return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-                $set: {'validate.invalid': 0, 'validate.code': Math.floor(Math.random() * 1000000)}
+                $set: {'validate.invalid': 0, 'validate.code': Math.floor(Math.random() * 1000000),
+                'validate.date': Date.now()
+                }
             });
         }
 
@@ -49,6 +52,14 @@ exports.User = {
 
     userLogin: (body)=>{
         return database().collection(databaseConfig.USER_COLLECTION).findOne({email: body.email});
+    },
+
+    getVerificationCode: (filter)=>{
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
+            $set: {'validate.invalid': 0, 'validate.code': Math.floor(Math.random() * 1000000),
+                'validate.date': Date.now()
+            }
+        });
     }
 
 }

@@ -6,6 +6,7 @@ const {validate} = require("../validation/books");
 const _ = require('lodash');
 const {ObjectId} = require('mongodb');
 const bcrypt = require('bcrypt');
+const valid = require('../middlewares/valid');
 
 router.get('/', async(req, res)=>{
     const books = await Book.getBooks();
@@ -17,7 +18,7 @@ router.get('/:id', async(req, res)=>{
     res.send(book);
 });
 
-router.post('/', [auth, seller], async(req, res)=>{
+router.post('/', [auth, valid, seller], async(req, res)=>{
     const {error} = validate(req.body);
     if(error) return res.status(400).send(error.details[0].message);
 
@@ -32,7 +33,7 @@ router.post('/', [auth, seller], async(req, res)=>{
     res.send(`"${req.body.title}" saved.`);
 });
 
-router.put('/:id', [auth, seller], async(req, res)=>{
+router.put('/:id', [auth, valid, seller], async(req, res)=>{
     const book = await Book.getBook({_id: ObjectId(req.params.id)});
     if(!book) return res.status(404).send('No book found');
 
@@ -50,8 +51,8 @@ router.put('/:id', [auth, seller], async(req, res)=>{
     res.send('Book saved.');
 })
 
-router.delete('/:id', [auth, seller], async(req, res)=>{
-    if(!req.body.password) return res.status(400).send('Invalid password.')
+router.delete('/:id', [auth, valid, seller], async(req, res)=>{
+    if(!req.body.password) return res.status(400).send('Invalid password.');
 
     const book = await Book.getBook({_id: ObjectId(req.params.id)});
     if(!book) return res.status(404).send('No book found');
@@ -60,10 +61,10 @@ router.delete('/:id', [auth, seller], async(req, res)=>{
     if(!seller) return res.status(401).send('Unauthorized action');
 
     const validPassword = await bcrypt.compare(req.body.password, req.user.password);
-    if(!validPassword) return res.status(400).send('Invalid password.')
+    if(!validPassword) return res.status(400).send('Invalid password.');
 
     await Book.deleteBook(ObjectId(req.params.id));
-    res.send(`"${book.title}" id deleted.`)
+    res.send(`"${book.title}" id deleted.`);
 });
 
 module.exports = router;

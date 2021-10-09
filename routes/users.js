@@ -2,6 +2,7 @@ const {User} = require("../database/users");
 const {validate, sendEmail} = require("../validation/users.js");
 const {generateAuthenticationToken, validateVerify, validateEmailOnly, validatePasswordOnly} = require("../validation/users");
 const auth = require("../middlewares/auth");
+const {ObjectId} = require("mongodb");
 const router = require('express').Router();
 
 router.post('/', async(req, res)=>{
@@ -50,6 +51,23 @@ router.put('/verify', auth, async(req, res)=>{
         .header('x-auth-token', await generateAuthenticationToken(req.user.email))
         .header('access-control-expose-headers', 'x-auth-token')
         .send(response);
+});
+
+router.get('/getverificationcode', auth, async(req, res)=>{
+
+    const user = await User.getUser({_id: ObjectId(req.user._id)});
+    console.log(user);
+    if(user.validate.valid) return res.send('verified user');
+
+
+    if((new Date().getMinutes()-new Date(user.validate.date).getMinutes())<=2)
+        return res.status(403).send("Must wait at least 2 minutes for next code.");
+
+    await User.getVerificationCode({_id: ObjectId(req.user._id)});
+    await sendEmail(req.user.email);
+
+    res.send('New verification code generated');
+
 });
 
 router.put('/forgetpassword', async(req, res)=>{
