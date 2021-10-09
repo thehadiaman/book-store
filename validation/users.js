@@ -24,6 +24,20 @@ exports.validateVerify = function (body){
     return schema.validate(body);
 }
 
+exports.validateEmailOnly = function (body){
+    const schema = Joi.object({
+        email: Joi.string().min(10).max(75).email().required()
+    });
+    return schema.validate(body);
+}
+
+exports.validatePasswordOnly = function (body){
+    const schema = Joi.object({
+        password: Joi.string().min(6).max(50).required()
+    });
+    return schema.validate(body);
+}
+
 exports.sendEmail = async(email)=>{
     let user = await User.getUser({email: email});
 
@@ -31,9 +45,9 @@ exports.sendEmail = async(email)=>{
     const msg = {
         to: user.email,
         from: config.get('EMAIL'),
-        subject: 'Book Store account verification code',
+        subject: 'Book Store account code',
         text: 'Book Store - Debating messenger application',
-        html: `<p>Your Debenger verificaton code is <u><b>${user.validate.code}</b></u>. </p>`,
+        html: `<p>Your Debenger code is <u><b>${user.validate.code}</b></u>. </p>`,
     }
 
     return sgMail
