@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 exports.User = {
 
     saveUser : async(body)=>{
-        const user = await userSchema(body);
+        const user = userSchema(body);
         return database().collection(databaseConfig.USER_COLLECTION).insertOne(user)
     },
 

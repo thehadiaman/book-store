@@ -18,5 +18,4 @@ module.exports = async function auth(req, res, next){
     }catch (ex){
         res.send(ex.message)
     }
-
 }
