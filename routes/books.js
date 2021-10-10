@@ -30,7 +30,7 @@ router.post('/', [auth, valid, seller], async(req, res)=>{
         _id: req.user._id,
         name: req.user.name
     };
-    await Book.saveBook(_.pick(req.body, ['title', 'author', 'price', 'stock', 'discount', 'seller']));
+    await Book.saveBook(_.pick(req.body, ['title', 'author', 'price', 'stock', 'discount', 'seller', 'description']));
     res.send(`"${req.body.title}" saved.`);
 });
 

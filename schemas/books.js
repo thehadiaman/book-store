@@ -3,6 +3,7 @@ exports.bookSchema = function(body){
         title: body.title,
         author: body.author,
         price: body.price,
+        description: body.description,
         discount: body.discount,
         stock: body.stock,
         seller: body.seller,
