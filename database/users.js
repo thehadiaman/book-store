@@ -68,9 +68,9 @@ exports.User = {
         )
     },
 
-    removeFromFavorite: (_id, id)=>{
-        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({_id: _id},
-            {$pull: {"favorites": id}}
+    removeFromFavorite: (userId, bookId)=>{
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({_id: userId},
+            {$pull: {"favorites": bookId}}
         )
     }
 

@@ -1,5 +1,6 @@
 {
   "DATABASE_NAME": "book-store",
   "USER_COLLECTION": "users",
-  "BOOK_COLLECTION": "books"
+  "BOOK_COLLECTION": "books",
+  "CART_COLLECTION": "cart"
 }
