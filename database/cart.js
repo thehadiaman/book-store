@@ -42,9 +42,27 @@ exports.Cart = {
         return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId}, {$push: {'cart': newUserItem}});
     },
 
-    getCartCount: (userId)=>{
+    getCartCount: async(userId)=>{
 
+        const cart = await database().collection(databaseConfig.CART_COLLECTION).findOne({userId: userId});
+        if(!cart) return 0;
 
+        const count = await database().collection(databaseConfig.CART_COLLECTION).aggregate([
+            {
+                $match: {userId: userId}
+            },
+            {
+                $unwind: '$cart'
+            },
+            {
+                $group: {
+                    _id: Date.now(),
+                    count: {$sum: "$cart.quantity"}
+                }
+            }
+        ]).toArray();
+
+        return count;
 
     }
 

@@ -9,6 +9,11 @@ router.get('/', [auth, valid], async(req, res)=>{
     res.send(CartItems);
 });
 
+router.get('/count', [auth, valid], async(req, res)=>{
+    const CartCount = (await Cart.getCartCount(ObjectId(req.user._id)))[0];
+    res.send(CartCount ? CartCount : {});
+});
+
 router.put('/:id', [auth, valid], async(req, res)=>{
 
     if(req.body.count !== 1 && req.body.count !== -1) return res.status(400).send('Invalid value');
