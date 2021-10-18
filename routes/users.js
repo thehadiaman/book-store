@@ -38,7 +38,11 @@ router.put('/verify', auth, async(req, res)=>{
     if(String(req.user.validate.code) !== req.body.code) body.error = true;
     else{
         await User.validateUser(body);
-        return res.status(400).send('User verified.');
+        const token = await generateAuthenticationToken(req.user.email);
+        return res
+            .header('x-auth-token', token)
+            .header('access-control-expose-headers', 'x-auth-token')
+            .send('User verified.');
     }
 
     body.invalid = req.user.validate.invalid >= 2;
@@ -50,6 +54,7 @@ router.put('/verify', auth, async(req, res)=>{
     res
         .header('x-auth-token', await generateAuthenticationToken(req.user.email))
         .header('access-control-expose-headers', 'x-auth-token')
+        .status(400)
         .send(response);
 });
 

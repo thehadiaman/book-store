@@ -10,7 +10,8 @@ module.exports = async function auth(req, res, next){
         const filter = {_id: ObjectId(decoded._id) , password: decoded.password};
 
         let user = await User.getUser(filter);
-        if(user === null) return res.status(404).send('Invalid user credentials.');
+        console.log(decoded);
+        if(user === null) return res.status(400).send('Invalid user credentials.');
         req.user = user;
         req.filter = filter;
         next()
