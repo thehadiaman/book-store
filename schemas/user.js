@@ -7,7 +7,7 @@ exports.userSchema = async(body)=>{
 
     const schema = {
         name: body.name,
-        email: body.email,
+        email: body.email.toLowerCase(),
         password: body.password,
         address: body.address,
         phone: body.phone,

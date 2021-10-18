@@ -118,8 +118,8 @@ router.get('/checkemail/:email', async(req, res)=>{
     const {error : EmailError} = validateEmailOnly({email: req.params.email});
     if(EmailError) return res.status(400).send(EmailError.details[0].message);
 
-    const user = await User.getUser({email: req.body.email});
-    if(user !== null) return res.status(400).send(true);
+    const user = await User.getUser({email: req.params.email.toLowerCase()});
+    if(user === null) return res.send(true);
     res.send(false)
 })
 
