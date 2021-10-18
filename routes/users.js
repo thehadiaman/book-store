@@ -61,7 +61,6 @@ router.put('/verify', auth, async(req, res)=>{
 router.get('/getverificationcode', auth, async(req, res)=>{
 
     const user = await User.getUser({_id: ObjectId(req.user._id)});
-    console.log(user);
     if(user.validate.valid) return res.send('verified user');
 
 
