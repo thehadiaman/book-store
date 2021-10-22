@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const schema = Joi.object({
     name: Joi.string().min(3).max(75).required(),
     email: Joi.string().min(10).max(75).required().email(),
-    password: Joi.string().min(6).max(50).required(),
+    password: Joi.string().min(8).max(50).required(),
     address: Joi.string().min(6).max(60).required(),
     phone: Joi.string().min(8).max(13).required(),
     type: Joi.string().min(5).max(6).required().valid('seller', 'buyer')
@@ -33,12 +33,12 @@ exports.validateEmailOnly = function (body){
 
 exports.validatePasswordOnly = function (body){
     const schema = Joi.object({
-        password: Joi.string().min(6).max(50).required()
+        password: Joi.string().min(8).max(50).required()
     });
     return schema.validate(body);
 }
 
-exports.sendEmail = async(email)=>{
+exports.sendEmail = async(email, password=false)=>{
     let user = await User.getUser({email: email});
 
     sgMail.setApiKey(config.get('EMAIL_API'))
@@ -46,8 +46,8 @@ exports.sendEmail = async(email)=>{
         to: user.email,
         from: config.get('EMAIL'),
         subject: 'Book Store account code',
-        text: 'Book Store - Debating messenger application',
-        html: `<p>Your Debenger code is <u><b>${user.validate.code}</b></u>. </p>`,
+        text: 'Book Store - ',
+        html: `<p>Your Book store verification code is <u><b>${password? user.resetPassword.code :user.validate.code}</b></u>. </p>`,
     }
 
     return sgMail

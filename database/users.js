@@ -7,7 +7,6 @@ exports.User = {
 
     saveUser : async(body)=>{
         const user = await userSchema(body);
-        console.log(user);
         return database().collection(databaseConfig.USER_COLLECTION).insertOne(user)
     },
 
@@ -17,7 +16,7 @@ exports.User = {
 
     generateForgetPasswordCode: (filter)=>{
         return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-            $set: {'validate.code': Math.floor(Math.random() * 1000000)}
+            $set: {'resetPassword.code': Math.floor(Math.random() * 1000000)}
         });
     },
 
@@ -72,6 +71,20 @@ exports.User = {
         return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({_id: userId},
             {$pull: {"favorites": bookId}}
         )
+    },
+
+    newPasswordResetCode: async(email, invalid)=>{
+        
+        if(invalid===2){
+            return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({email: email}, {
+                $set: {'resetPassword.invalid' : 0}
+            })
+        }
+
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({email: email}, {
+            $inc: {'resetPassword.invalid': 1}
+        })
+
     }
 
 }

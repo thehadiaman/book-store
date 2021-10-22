@@ -30,7 +30,7 @@ router.put('/verify', auth, async(req, res)=>{
     const {error} = validateVerify(req.body);
     if(error) return res.status(400).send(error.details[0].message);
 
-    if(req.user.validate.valid) return res.send('User already verified.');
+    if(req.user.validate.valid) return res.status(400).send('User already verified.');
 
     const body = {};
     body.filter = req.filter;
@@ -83,7 +83,7 @@ router.put('/forgetpassword', async(req, res)=>{
     if(!user) return res.status(404).send('No user found.');
 
     await User.generateForgetPasswordCode({email: req.body.email})
-    await sendEmail(req.body.email);
+    await sendEmail(req.body.email, true);
     res
         .header('email', req.body.email)
         .header('access-control-expose-headers', 'email')
@@ -93,23 +93,30 @@ router.put('/forgetpassword', async(req, res)=>{
 
 router.put('/resetpassword', async(req, res)=>{
 
-    if(!req.header('email')) return res.status(400).send('Invalid credentials.');
+    if(!req.body.email) return res.status(400).send('Invalid credentials.');
 
-    const {error : EmailError} = validateEmailOnly({email: req.header('email')});
+    const {error : EmailError} = validateEmailOnly({email: req.body.email});
     if(EmailError) return res.status(400).send(EmailError.details[0].message);
 
-    const {error: CodeError} = validateVerify({code: req.header('code')});
+    const {error: CodeError} = validateVerify({code: req.body.code});
     if(CodeError) return res.status(400).send(CodeError.details[0].message);
 
-    let user = await User.getUser({email: req.header('email')});
+    let user = await User.getUser({email: req.body.email});
     if(!user) return res.status(404).send('No user found.');
 
-    if(String(user.validate.code) !== req.header('code')) return res.status(400).send('Invalid credentials.');
+    if(String(user.resetPassword.code) !== req.body.code) {
+        if(user.resetPassword.invalid === 2){
+            await User.generateForgetPasswordCode({email: req.body.email})
+            await sendEmail(req.body.email, true);
+        }
+        await User.newPasswordResetCode(req.body.email, user.resetPassword.invalid);
+        return res.status(400).send('Invalid credentials.');
+    }
 
     const {error: PasswordError} = validatePasswordOnly({password: req.body.password});
     if(PasswordError) return res.status(400).send(PasswordError.details[0].message);
 
-    await User.validateUser({password: req.body.password, filter: {email: req.header('email')}});
+    await User.validateUser({password: req.body.password, filter: {email: req.body.email}});
     res.send('Password changed')
 });
 
