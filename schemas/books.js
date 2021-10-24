@@ -1,6 +1,6 @@
 exports.bookSchema = function(body){
     return {
-        title: body.title,
+        title: body.title.toLowerCase(),
         author: body.author,
         price: body.price,
         description: body.description,

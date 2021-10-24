@@ -23,7 +23,7 @@ router.post('/', [auth, valid, seller], async(req, res)=>{
     const {error} = validate(req.body);
     if(error) return res.status(400).send(error.details[0].message);
 
-    const book = await Book.getBook({seller: req.user.name, title: req.body.title});
+    const book = await Book.getBook({'seller.name': req.user.name, title: req.body.title.toLowerCase()});
     if(book) return res.status(400).send('Book already saved.');
 
     req.body.seller = {
