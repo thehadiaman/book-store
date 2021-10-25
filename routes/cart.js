@@ -15,7 +15,6 @@ router.get('/count', [auth, valid], async(req, res)=>{
 });
 
 router.put('/:id', [auth, valid], async(req, res)=>{
-
     if(req.body.count !== 1 && req.body.count !== -1) return res.status(400).send('Invalid value');
     await Cart.addToCart(ObjectId(req.user._id), ObjectId(req.params.id), Number(req.body.count))
         .catch((data)=>{

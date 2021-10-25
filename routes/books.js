@@ -14,6 +14,17 @@ router.get('/', async(req, res)=>{
     res.send(books);
 });
 
+router.get('/seller/:id', async(req, res)=>{
+    const books = await Book.getFilteredBooks({'seller._id': ObjectId(req.params.id)});
+    res.send(books);
+});
+
+router.get('/findByName', [auth, seller, valid] ,async(req, res)=>{
+    const title = req.query.title? req.query.title.toLowerCase(): '';
+    const books = await Book.getFilteredBooks({'seller._id': req.user._id, title: title});
+    res.send(books);
+});
+
 router.get('/:id', async(req, res)=>{
     const book = await Book.getBook({_id: ObjectId(req.params.id)});
     res.send(book);

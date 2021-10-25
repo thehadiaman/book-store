@@ -8,6 +8,10 @@ exports.Book = {
         return database().collection(databaseConfig.BOOK_COLLECTION).find().toArray();
     },
 
+    getFilteredBooks: (filter)=>{
+        return database().collection(databaseConfig.BOOK_COLLECTION).find(filter).toArray();
+    },
+
     getBook: (filter)=>{
         return database().collection(databaseConfig.BOOK_COLLECTION).findOne(filter? filter: {})
     },
