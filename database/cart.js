@@ -9,6 +9,7 @@ exports.Cart = {
     addToCart: async(userId, bookId, count)=>{
         const cart = await database().collection(databaseConfig.CART_COLLECTION).findOne({userId: userId});
         if(!cart){
+            console.log(123);
             const cartSchema = {
                 userId: userId,
                 cart: [{
@@ -19,8 +20,8 @@ exports.Cart = {
             return database().collection(databaseConfig.CART_COLLECTION).insertOne(cartSchema);
         }
 
-        const userItem = cart.cart? cart.cart.filter(item=>String(item.bookId) === String(bookId)) : [];
-        if(userItem.length===0){
+        const userItem = cart.cart!==[]? cart.cart.find(item=>String(item.bookId) === String(bookId)) : [];
+        if(userItem===undefined){
             const item = {
                 bookId: bookId,
                 quantity: 1
@@ -30,16 +31,11 @@ exports.Cart = {
             });
         }
 
-        const newUserItem = {};
-        newUserItem.bookId = userItem[0].bookId;
-        newUserItem.quantity = userItem[0].quantity + count;
-
-        if(newUserItem.quantity===0){
-            return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId}, {$pull: {'cart': userItem[0]}});
+        if((userItem.quantity + count)===0){
+            return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId}, {$pull: {'cart': userItem}});
         }
 
-        database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId}, {$pull: {'cart': userItem[0]}});
-        return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId}, {$push: {'cart': newUserItem}});
+        return database().collection(databaseConfig.CART_COLLECTION).updateOne({'cart.bookId': bookId}, {$inc:{'cart.$.quantity': count}});
     },
 
     getCartCount: async(userId)=>{
@@ -47,7 +43,7 @@ exports.Cart = {
         const cart = await database().collection(databaseConfig.CART_COLLECTION).findOne({userId: userId});
         if(!cart) return 0;
 
-        const count = await database().collection(databaseConfig.CART_COLLECTION).aggregate([
+        return await database().collection(databaseConfig.CART_COLLECTION).aggregate([
             {
                 $match: {userId: userId}
             },
@@ -61,9 +57,34 @@ exports.Cart = {
                 }
             }
         ]).toArray();
+    },
 
-        return count;
+    getAllFromCart: async()=>{
 
+        return await database().collection(databaseConfig.CART_COLLECTION).aggregate([
+            {$unwind: '$cart'},
+            {
+                $lookup:{
+                    from: "books",
+                    localField: "cart.bookId",
+                    foreignField: "_id",
+                    as: "cartItems"
+                }
+            },
+            {
+                $project: {
+                    _id: "$cartItems._id",
+                    quantity: "$cart.quantity",
+                    cartItems: "$cartItems"
+                }
+            },
+            {$unwind: '$cartItems'},
+            {$unwind: '$_id'},
+            {
+                $set: {
+                    "cartItems.quantity": "$quantity"
+                }
+            }
+        ]).toArray();
     }
-
-}
+};

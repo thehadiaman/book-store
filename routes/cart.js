@@ -19,8 +19,14 @@ router.put('/:id', [auth, valid], async(req, res)=>{
     await Cart.addToCart(ObjectId(req.user._id), ObjectId(req.params.id), Number(req.body.count))
         .catch((data)=>{
             console.log(data);
-        })
+        });
     res.send('Item modified in cart');
+});
+
+router.get('/getAll', [auth, valid], async(req, res)=>{
+
+    const cartItems = await Cart.getAllFromCart();
+    res.send(cartItems);
 
 });
 
