@@ -25,8 +25,19 @@ router.put('/:id', [auth, valid], async(req, res)=>{
 
 router.get('/getAll', [auth, valid], async(req, res)=>{
 
-    const cartItems = await Cart.getAllFromCart();
+    const userId = req.user._id;
+
+    const cartItems = await Cart.getAllFromCart(userId);
     res.send(cartItems);
+
+});
+
+router.get('/getTotalPrice', [auth, valid], async(req, res)=>{
+
+    const userId = req.user._id;
+
+    const totalPrice = await Cart.getTotalPrice(userId);
+    res.send(totalPrice[0]);
 
 });
 

@@ -9,7 +9,6 @@ exports.Cart = {
     addToCart: async(userId, bookId, count)=>{
         const cart = await database().collection(databaseConfig.CART_COLLECTION).findOne({userId: userId});
         if(!cart){
-            console.log(123);
             const cartSchema = {
                 userId: userId,
                 cart: [{
@@ -35,7 +34,7 @@ exports.Cart = {
             return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId}, {$pull: {'cart': userItem}});
         }
 
-        return database().collection(databaseConfig.CART_COLLECTION).updateOne({'cart.bookId': bookId}, {$inc:{'cart.$.quantity': count}});
+        return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId, 'cart.bookId': bookId}, {$inc:{'cart.$.quantity': count}});
     },
 
     getCartCount: async(userId)=>{
@@ -59,9 +58,14 @@ exports.Cart = {
         ]).toArray();
     },
 
-    getAllFromCart: async()=>{
+    getAllFromCart: async(userId)=>{
 
         return await database().collection(databaseConfig.CART_COLLECTION).aggregate([
+            {
+                $match: {
+                    'userId': userId
+                }
+            },
             {$unwind: '$cart'},
             {
                 $lookup:{
@@ -83,6 +87,45 @@ exports.Cart = {
             {
                 $set: {
                     "cartItems.quantity": "$quantity"
+                }
+            }
+        ]).toArray();
+    },
+
+    getTotalPrice: (userId)=>{
+        return database().collection(databaseConfig.CART_COLLECTION).aggregate([
+            {
+                $match: {
+                    'userId': userId
+                }
+            },
+            {$unwind: '$cart'},
+            {
+                $lookup:{
+                    from: "books",
+                    localField: "cart.bookId",
+                    foreignField: "_id",
+                    as: "cartItems"
+                }
+            },
+            {
+                $project: {
+                    _id: "$cartItems._id",
+                    quantity: "$cart.quantity",
+                    cartItems: "$cartItems"
+                }
+            },
+            {$unwind: '$cartItems'},
+            {
+                $addFields: {
+                    total: {$multiply: ["$quantity", {$toInt: "$cartItems.price"}] }
+                }
+            },
+            {$unwind: '$total'},
+            {
+                $group: {
+                    _id: "_id",
+                    total: {$sum: "$total"}
                 }
             }
         ]).toArray();
