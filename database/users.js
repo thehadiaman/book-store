@@ -1,90 +1,137 @@
 const databaseConfig = require('./config.json');
-const {database} = require("../startup/database");
-const {userSchema} = require("../schemas/user");
+const {
+    database
+} = require("../startup/database");
+const {
+    userSchema
+} = require("../schemas/user");
 const bcrypt = require('bcrypt');
 
 exports.User = {
 
-    saveUser : async(body)=>{
+    saveUser: async (body) => {
         const user = await userSchema(body);
-        return database().collection(databaseConfig.USER_COLLECTION).insertOne(user)
+        return database().collection(databaseConfig.USER_COLLECTION).insertOne(user);
     },
 
-    getUser: (filter)=>{
+    getUser: (filter) => {
         return database().collection(databaseConfig.USER_COLLECTION).findOne(filter);
     },
 
-    generateForgetPasswordCode: (filter)=>{
+    generateForgetPasswordCode: (filter) => {
         return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-            $set: {'resetPassword.code': Math.floor(Math.random() * 1000000)}
+            $set: {
+                'resetPassword.code': Math.floor(Math.random() * 1000000)
+            }
         });
     },
 
-    validateUser: async({invalid, error, filter, password})=>{
+    validateUser: async ({
+        invalid,
+        error,
+        filter,
+        password
+    }) => {
 
-        if(invalid) {
+        if (invalid) {
             return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-                $set: {'validate.invalid': 0, 'validate.code': Math.floor(Math.random() * 1000000),
-                'validate.date': Date.now()
+                $set: {
+                    'validate.invalid': 0,
+                    'validate.code': Math.floor(Math.random() * 1000000),
+                    'validate.date': Date.now()
                 }
             });
         }
 
-        if(error) {
+        if (error) {
             return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-                $inc: {'validate.invalid': 1}
+                $inc: {
+                    'validate.invalid': 1
+                }
             });
         }
 
-        if(password){
+        if (password) {
             return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-                $set: {'password': await bcrypt.hash(password, await bcrypt.genSalt(10)),
+                $set: {
+                    'password': await bcrypt.hash(password, await bcrypt.genSalt(10)),
                     'validate.code': Math.floor(Math.random() * 1000000)
                 }
             });
         }
 
         database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-            $set: {'validate.valid': true}
+            $set: {
+                'validate.valid': true
+            }
         });
     },
 
-    userLogin: (body)=>{
-        return database().collection(databaseConfig.USER_COLLECTION).findOne({email: body.email});
+    userLogin: (body) => {
+        return database().collection(databaseConfig.USER_COLLECTION).findOne({
+            email: body.email
+        });
     },
 
-    getVerificationCode: (filter)=>{
+    getVerificationCode: (filter) => {
         return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate(filter, {
-            $set: {'validate.invalid': 0, 'validate.code': Math.floor(Math.random() * 1000000),
+            $set: {
+                'validate.invalid': 0,
+                'validate.code': Math.floor(Math.random() * 1000000),
                 'validate.date': Date.now()
             }
         });
     },
 
-    addToFavorite: (_id, id)=>{
-        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({_id: _id},
-            {$push: {"favorites": id}}
-        )
+    addToFavorite: (_id, id) => {
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({
+            _id: _id
+        }, {
+            $push: {
+                "favorites": id
+            }
+        });
     },
 
-    removeFromFavorite: (userId, bookId)=>{
-        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({_id: userId},
-            {$pull: {"favorites": bookId}}
-        )
+    removeFromFavorite: (userId, bookId) => {
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({
+            _id: userId
+        }, {
+            $pull: {
+                "favorites": bookId
+            }
+        });
     },
 
-    newPasswordResetCode: async(email, invalid)=>{
-        
-        if(invalid===2){
-            return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({email: email}, {
-                $set: {'resetPassword.invalid' : 0}
-            })
+    newPasswordResetCode: async (email, invalid) => {
+
+        if (invalid === 2) {
+            return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({
+                email: email
+            }, {
+                $set: {
+                    'resetPassword.invalid': 0
+                }
+            });
         }
 
-        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({email: email}, {
-            $inc: {'resetPassword.invalid': 1}
-        })
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({
+            email: email
+        }, {
+            $inc: {
+                'resetPassword.invalid': 1
+            }
+        });
 
+    },
+
+    updateAddress: async (userId, newAddress) => {
+        return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({
+            _id: userId
+        }, {
+            $set: {
+                address: newAddress
+            }
+        });
     }
-
-}
+};
