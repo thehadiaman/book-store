@@ -184,9 +184,8 @@ router.get('/checkemail/:email', async (req, res) => {
     res.send(false);
 });
 
-router.put('/updateAddress', auth, async (req, res) => {
-    const newAddress = req.body.address;
-    await User.updateAddress(req.user._id, newAddress);
+router.put('/updateContact', auth, async (req, res) => {
+    await User.updateContact(req.user._id, req.body);
     res.send('Address Updated');
 });
 

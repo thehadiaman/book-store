@@ -125,12 +125,15 @@ exports.User = {
 
     },
 
-    updateAddress: async (userId, newAddress) => {
+    updateContact: async (userId, data) => {
+        console.log(data);
         return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({
             _id: userId
         }, {
             $set: {
-                address: newAddress
+                address: data.address,
+                phone: data.phone,
+                zip: data.zip,
             }
         });
     }

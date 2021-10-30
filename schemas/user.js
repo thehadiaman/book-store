@@ -11,6 +11,7 @@ exports.userSchema = async(body)=>{
         password: body.password,
         address: body.address,
         phone: body.phone,
+        zip: body.zip,
         type: body.type,
         validate: {
             valid: false,

@@ -13,9 +13,9 @@ module.exports = async function auth(req, res, next){
         if(user === null) return res.status(400).send('Invalid user credentials.');
         req.user = user;
         req.filter = filter;
-        next()
+        next();
 
     }catch (ex){
-        res.send(ex.message)
+        res.send(ex.message);
     }
-}
+};

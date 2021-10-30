@@ -13,7 +13,7 @@ exports.Book = {
     },
 
     getBook: (filter)=>{
-        return database().collection(databaseConfig.BOOK_COLLECTION).findOne(filter? filter: {})
+        return database().collection(databaseConfig.BOOK_COLLECTION).findOne(filter? filter: {});
     },
 
     saveBook: (body)=>{
@@ -29,4 +29,4 @@ exports.Book = {
         return database().collection(databaseConfig.BOOK_COLLECTION).findOneAndDelete({_id: id});
     }
 
-}
+};

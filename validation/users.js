@@ -9,6 +9,7 @@ const schema = Joi.object({
     email: Joi.string().min(10).max(75).required().email(),
     password: Joi.string().min(8).max(50).required(),
     address: Joi.string().min(6).max(60).required(),
+    zip: Joi.string().min(5).max(6).required().label('Zip'),
     phone: Joi.string().min(8).max(13).required(),
     type: Joi.string().min(5).max(6).required().valid('seller', 'buyer')
 });

@@ -1,7 +1,7 @@
 const {validaLogin} = require("../validation/auth");
 const {User} = require("../database/users");
 const {generateAuthenticationToken} = require("../validation/users");
-const router = require('express').Router()
+const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const valid = require('../middlewares/valid');
 const auth = require("../middlewares/auth");
@@ -21,7 +21,7 @@ router.post('/', async(req, res)=>{
     res
         .header('x-auth-token', await generateAuthenticationToken(req.body.email))
         .header('access-control-expose-headers', 'x-auth-token')
-        .send('Login successful.')
+        .send('Login successful.');
 
 });
 
