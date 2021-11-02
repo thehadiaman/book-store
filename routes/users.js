@@ -22,7 +22,6 @@ router.post('/', async (req, res) => {
         error
     } = validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-    console.log(123);
 
     let user = await User.getUser({
         email: req.body.email
@@ -188,6 +187,14 @@ router.get('/checkemail/:email', async (req, res) => {
 router.put('/updateContact', auth, async (req, res) => {
     await User.updateContact(req.user._id, req.body);
     res.send('Address Updated');
+});
+
+
+router.get('/check-delivery-partner-zip/:zip', async(req, res)=>{
+    const user = await User.getUser({zip: req.params.zip, type: 'delivery_partner'});
+    if(user) return res.status(400).send(`Already have a delivery partner in "${req.params.zip}" this zip code.`);
+
+    res.send('Feel free to register as our delivery partner.');
 });
 
 module.exports = router;

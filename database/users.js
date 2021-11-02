@@ -126,7 +126,6 @@ exports.User = {
     },
 
     updateContact: async (userId, data) => {
-        console.log(data);
         return database().collection(databaseConfig.USER_COLLECTION).findOneAndUpdate({
             _id: userId
         }, {

@@ -8,12 +8,12 @@ const {
 const {
     User
 } = require("./users");
+const {ObjectId} = require('mongodb');
 
 exports.Order = {
     placeOrder: async (userId) => {
-
         const cart = await Cart.getCartItems(userId);
-        if(cart===null || cart.cart.length<=0){
+        if (cart === null || cart.cart.length <= 0) {
             return false;
         }
 
@@ -30,6 +30,7 @@ exports.Order = {
             const order = {
                 userId: userId,
                 orders: [{
+                    _id: new ObjectId(),
                     items: cart.cart,
                     cost: totalCost,
                     status: "ordered",
@@ -46,7 +47,7 @@ exports.Order = {
                 }
             });
 
-            database().collection(databaseConfig.ORDER_COLLECTION).insertOne(order);
+            return database().collection(databaseConfig.ORDER_COLLECTION).insertOne(order);
         }
 
         database().collection(databaseConfig.CART_COLLECTION).findOneAndUpdate({
@@ -62,6 +63,7 @@ exports.Order = {
         }, {
             $push: {
                 orders: {
+                    _id: new ObjectId(),
                     items: cart.cart,
                     cost: totalCost,
                     status: "ordered",
@@ -72,14 +74,12 @@ exports.Order = {
             }
         });
 
-        // const sellers = database().collection(databaseConfig.BOOK_COLLECTION).findOneAndUpdate();
-        return;
+        return true;
     },
 
-    validateCheckOut: async(userId, payment)=>{
-
+    validateCheckOut: async (userId, payment) => {
         const cart = await Cart.getCartItems(userId);
-        if(cart===null || cart.cart.length<=0){
+        if (cart === null || cart.cart.length <= 0) {
             return false;
         }
 
@@ -87,10 +87,60 @@ exports.Order = {
             _id: userId
         });
 
-        if(payment==='cod') return true;
+        if (payment === 'cod') return true;
         console.log(payment);
         return false;
+    },
 
-    }
+    getMyOrders: async (userId) => {
 
+        let orders = await database().collection(databaseConfig.ORDER_COLLECTION).aggregate([{
+                $match: {
+                    userId: userId
+                }
+            },
+            {$unwind: '$orders'},
+            {
+                $addFields: {
+                    cost: '$orders.cost',
+                    status: '$orders.status',
+                    address: '$orders.address',
+                    zip: '$orders.zip',
+                    phone: '$orders.contactNumber',
+                    order: '$orders.items'
+                }
+            },
+            {
+                $project: {
+                    orders: 0
+                }
+            },
+            {
+                $lookup: {
+                    from: 'books',
+                    localField: 'order.bookId',
+                    foreignField: '_id',
+                    as: 'books'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            }
+
+        ]).toArray();
+
+        return orders;
+
+    },
+
+    checkOrder: async (userId) => {
+        return database().collection(databaseConfig.ORDER_COLLECTION).findOne({
+            userId: userId
+        });
+    },
 };
