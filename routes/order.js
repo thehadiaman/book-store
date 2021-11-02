@@ -4,6 +4,7 @@ const {User} = require('../database/users');
 const {Cart} = require('../database/cart');
 const auth = require('../middlewares/auth');
 const valid = require('../middlewares/valid');
+const { ObjectId } = require('mongodb');
 
 
 router.post('/', [auth, valid], async(req, res)=>{
@@ -27,10 +28,27 @@ router.get('/myOrders', [auth, valid],  async(req, res)=>{
     const userId = req.user._id;
 
     const isOrder = await Order.checkOrder(userId);
-    if(!isOrder || isOrder.orders.length<=0) return res.status(400).send('No orders found.');
+    if(!isOrder || isOrder.orders.length<=0) return res.status(401).send('No orders found.');
 
     const order = await Order.getMyOrders(userId);
     res.send(order);
+});
+
+router.put('/cancelOrder', [auth, valid], async(req, res)=>{
+
+    if(!req.body.OrderId) return res.status(400).send('Invalid credentials.');
+
+    const userId = req.user._id;
+
+    const isOrder = await Order.checkOrder(userId);
+    if(!isOrder || isOrder.orders.length<=0) return res.status(401).send('No orders found.');
+
+    const cancelling = await Order.cancelOrder(userId, ObjectId(req.body.OrderId));
+
+    if(!cancelling) return res.status(400).send('Invalid credentials.');
+
+    res.send('OK');
+
 });
 
 module.exports = router;

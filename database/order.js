@@ -30,7 +30,7 @@ exports.Order = {
             const order = {
                 userId: userId,
                 orders: [{
-                    _id: new ObjectId(),
+                    OrderId: new ObjectId(),
                     items: cart.cart,
                     cost: totalCost,
                     status: "ordered",
@@ -63,7 +63,7 @@ exports.Order = {
         }, {
             $push: {
                 orders: {
-                    _id: new ObjectId(),
+                    OrderId: new ObjectId(),
                     items: cart.cart,
                     cost: totalCost,
                     status: "ordered",
@@ -102,6 +102,7 @@ exports.Order = {
             {$unwind: '$orders'},
             {
                 $addFields: {
+                    OrderId: '$orders.OrderId',
                     cost: '$orders.cost',
                     status: '$orders.status',
                     address: '$orders.address',
@@ -143,4 +144,38 @@ exports.Order = {
             userId: userId
         });
     },
+
+    cancelOrder: async(userId, OrderId) => {
+        const orderItems = await database().collection(databaseConfig.ORDER_COLLECTION).findOne({
+            userId: userId,
+            'orders.OrderId': OrderId
+        });
+
+        if(!orderItems) return false;
+        const order = orderItems.orders.find(o=>String(o.OrderId)===String(OrderId));
+
+        database().collection(databaseConfig.CART_COLLECTION).findOneAndUpdate({
+            userId: userId
+        }, {
+            $push: {cart: {$each: order.items}}
+        });
+        database().collection(databaseConfig.ORDER_COLLECTION).findOneAndUpdate({
+            userId: userId,
+            'orders.OrderId': OrderId
+        }, {
+            $pull: {'orders': order}
+        });
+
+        return true;
+    },
+
+    findOrder: async(userId, OrderId) => {
+
+        return database().collection(databaseConfig.ORDER_COLLECTION).findOne({
+            userId: userId,
+            'orders.OrderId': OrderId
+        });
+
+    }
+
 };
