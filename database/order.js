@@ -8,7 +8,9 @@ const {
 const {
     User
 } = require("./users");
-const {ObjectId} = require('mongodb');
+const {
+    ObjectId
+} = require('mongodb');
 
 exports.Order = {
     placeOrder: async (userId) => {
@@ -99,7 +101,9 @@ exports.Order = {
                     userId: userId
                 }
             },
-            {$unwind: '$orders'},
+            {
+                $unwind: '$orders'
+            },
             {
                 $addFields: {
                     OrderId: '$orders.OrderId',
@@ -119,7 +123,7 @@ exports.Order = {
             {
                 $lookup: {
                     from: 'books',
-                    localField: 'order.bookId',
+                    localField: 'order._id',
                     foreignField: '_id',
                     as: 'books'
                 }
@@ -145,37 +149,196 @@ exports.Order = {
         });
     },
 
-    cancelOrder: async(userId, OrderId) => {
+    cancelOrder: async (userId, OrderId) => {
         const orderItems = await database().collection(databaseConfig.ORDER_COLLECTION).findOne({
             userId: userId,
             'orders.OrderId': OrderId
         });
 
-        if(!orderItems) return false;
-        const order = orderItems.orders.find(o=>String(o.OrderId)===String(OrderId));
+        if (!orderItems) return false;
+        const order = orderItems.orders.find(o => String(o.OrderId) === String(OrderId));
+
+        if (order.status === 'delivered' || order.status === 'cancelled') return false;
 
         database().collection(databaseConfig.CART_COLLECTION).findOneAndUpdate({
             userId: userId
         }, {
-            $push: {cart: {$each: order.items}}
+            $push: {
+                cart: {
+                    $each: order.items
+                }
+            }
         });
+
+        const newOrder = {
+            ...order
+        };
+        newOrder.status = 'cancelled';
+
         database().collection(databaseConfig.ORDER_COLLECTION).findOneAndUpdate({
-            userId: userId,
-            'orders.OrderId': OrderId
+            userId: userId
         }, {
-            $pull: {'orders': order}
+            $pull: {
+                'orders': order
+            }
+        });
+
+        database().collection(databaseConfig.ORDER_COLLECTION).findOneAndUpdate({
+            userId: userId
+        }, {
+            $push: {
+                'orders': newOrder
+            }
         });
 
         return true;
     },
 
-    findOrder: async(userId, OrderId) => {
+    getDeliveries: async (zip) => {
 
-        return database().collection(databaseConfig.ORDER_COLLECTION).findOne({
-            userId: userId,
-            'orders.OrderId': OrderId
-        });
+        return database().collection(databaseConfig.ORDER_COLLECTION).aggregate([{
+                $unwind: "$orders"
+            },
+            {
+                $match: {
+                    "orders.zip": zip,
+                    "orders.status": {
+                        $ne: "cancelled"
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "orders.items._id",
+                    foreignField: "_id",
+                    as: "books"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "books.seller._id",
+                    foreignField: "_id",
+                    as: "sellers"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $project: {
+                    "orders.OrderId": 1,
+                    "orders.items": 1,
+                    "orders.cost": 1,
+                    "orders.address": 1,
+                    "orders.quantity": 1,
+                    "orders.status": 1,
+                    "orders.zip": 1,
+                    "orders.contactNumber": 1,
+                    "books.title": 1,
+                    "books._id": 1,
+                    "books.price": 1,
+                    "sellers.name": 1,
+                    "sellers.address": 1,
+                    "sellers.phone": 1,
+                    "sellers.email": 1,
+                    "sellers.zip": 1,
+                    "user.name": 1
+                }
+            }
+        ]).toArray();
 
+    },
+
+    orders: (userId) => {
+        const orders = database().collection(databaseConfig.ORDER_COLLECTION).aggregate([{
+                $unwind: "$orders"
+            },
+            {
+                $addFields: {
+                    "OrderId": "$orders.OrderId",
+                    "cost": "$orders.cost",
+                    "status": "$orders.status",
+                    "address": "$orders.address",
+                    "zip": "$orders.zip",
+                    "contactNumber": "$orders.contactNumber",
+                    "orders": "$orders.items"
+                }
+            },
+            {
+                $unwind: '$orders'
+            },
+            {
+                $lookup: {
+                    from: 'books',
+                    localField: 'orders._id',
+                    foreignField: '_id',
+                    as: 'books'
+                }
+            },
+            {
+                $unwind: '$books'
+            },
+            {
+                $match: {
+                    "books.seller._id": userId,
+                    "status": 'ordered'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'zip',
+                    foreignField: 'zip',
+                    as: 'delivery_partner'
+                }
+            },
+            {
+                $unwind: '$delivery_partner'
+            },
+            {
+                $match: {
+                    'delivery_partner.type': 'delivery_partner'
+                }
+            },
+            {
+                $addFields: {
+                    quantity: "$orders.quantity",
+                    bookTitle: "$books.title",
+                    _id: "$books._id",
+                    price: "$books.price",
+                    deliveryPartnerName: '$delivery_partner.name',
+                    deliveryPartnerPhone: "$delivery_partner.phone",
+                }
+            },
+            {
+                $project: {
+                    OrderId: 1,
+                    deliveryPartnerName: 1,
+                    deliveryPartnerPhone: 1,
+                    totalCost: {
+                        $multiply: [{
+                            $toInt: '$price'
+                        }, {
+                            $toInt: '$quantity'
+                        }]
+                    },
+                    bookTitle: 1,
+                    quantity: 1
+                }
+            }
+        ]).toArray();
+
+        return orders;
     }
 
 };

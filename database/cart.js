@@ -6,23 +6,23 @@ exports.Cart = {
         return database().collection(databaseConfig.CART_COLLECTION).findOne({userId: userId});
     },
 
-    addToCart: async(userId, bookId, count)=>{
+    addToCart: async(userId, _id, count)=>{
         const cart = await database().collection(databaseConfig.CART_COLLECTION).findOne({userId: userId});
         if(!cart){
             const cartSchema = {
                 userId: userId,
                 cart: [{
-                    bookId: bookId,
+                    _id: _id,
                     quantity: 1
                 }]
             };
             return database().collection(databaseConfig.CART_COLLECTION).insertOne(cartSchema);
         }
 
-        const userItem = cart.cart!==[]? cart.cart.find(item=>String(item.bookId) === String(bookId)) : [];
+        const userItem = cart.cart!==[]? cart.cart.find(item=>String(item._id) === String(_id)) : [];
         if(userItem===undefined){
             const item = {
-                bookId: bookId,
+                _id: _id,
                 quantity: 1
             };
             return database().collection(databaseConfig.CART_COLLECTION).findOneAndUpdate({userId: userId}, {
@@ -34,7 +34,7 @@ exports.Cart = {
             return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId}, {$pull: {'cart': userItem}});
         }
 
-        return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId, 'cart.bookId': bookId}, {$inc:{'cart.$.quantity': count}});
+        return database().collection(databaseConfig.CART_COLLECTION).updateOne({userId: userId, 'cart._id': _id}, {$inc:{'cart.$.quantity': count}});
     },
 
     getCartCount: async(userId)=>{
@@ -70,7 +70,7 @@ exports.Cart = {
             {
                 $lookup:{
                     from: "books",
-                    localField: "cart.bookId",
+                    localField: "cart._id",
                     foreignField: "_id",
                     as: "cartItems"
                 }
@@ -103,7 +103,7 @@ exports.Cart = {
             {
                 $lookup:{
                     from: "books",
-                    localField: "cart.bookId",
+                    localField: "cart._id",
                     foreignField: "_id",
                     as: "cartItems"
                 }

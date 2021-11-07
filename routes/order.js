@@ -41,14 +41,31 @@ router.put('/cancelOrder', [auth, valid], async(req, res)=>{
     const userId = req.user._id;
 
     const isOrder = await Order.checkOrder(userId);
-    if(!isOrder || isOrder.orders.length<=0) return res.status(401).send('No orders found.');
+    if(!isOrder || isOrder.orders.length<=0) return res.status(400).send('No orders found.');
 
     const cancelling = await Order.cancelOrder(userId, ObjectId(req.body.OrderId));
 
     if(!cancelling) return res.status(400).send('Invalid credentials.');
 
-    res.send('OK');
+    res.send('Order cancelled');
 
+});
+
+
+router.get('/deliveries', [auth, valid], async(req, res)=>{
+    const zip = req.user.zip;
+    const deliveries = await Order.getDeliveries(zip);
+    if(!deliveries) return res.send('No deliveries');
+
+    res.send(deliveries);
+});
+
+router.get('/orders', [auth, valid], async(req, res)=>{
+    const userId = req.user._id;
+    const orders = await Order.orders(userId);
+    if(orders.length<=0) return res.send('No orders found');
+
+    res.send(orders);
 });
 
 module.exports = router;
