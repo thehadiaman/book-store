@@ -246,7 +246,9 @@ exports.Order = {
                     "orders.contactNumber": 1,
                     "books.title": 1,
                     "books._id": 1,
+                    "books.seller._id": 1,
                     "books.price": 1,
+                    "sellers._id": 1,
                     "sellers.name": 1,
                     "sellers.address": 1,
                     "sellers.phone": 1,
@@ -316,8 +318,9 @@ exports.Order = {
                     bookTitle: "$books.title",
                     _id: "$books._id",
                     price: "$books.price",
+                    packed: "$orders.packed",
                     deliveryPartnerName: '$delivery_partner.name',
-                    deliveryPartnerPhone: "$delivery_partner.phone",
+                    deliveryPartnerPhone: "$delivery_partner.phone"
                 }
             },
             {
@@ -333,12 +336,64 @@ exports.Order = {
                         }]
                     },
                     bookTitle: 1,
-                    quantity: 1
+                    quantity: 1,
+                    packed: 1
                 }
             }
         ]).toArray();
 
         return orders;
-    }
+    },
+    packBook: async (orderId, bookId) => {
+        const orders = await database().collection(databaseConfig.ORDER_COLLECTION).findOne({
+            'orders.OrderId': orderId,
+            'orders.items._id': bookId
+        });
 
+        if (!orders) return false;
+
+        await database().collection(databaseConfig.ORDER_COLLECTION).updateOne({
+            'orders.OrderId': orderId,
+            'orders.items._id': bookId
+        }, {
+            $set: {
+                "orders.$[order].items.$[item].packed": "packed"
+            }
+        }, {
+            arrayFilters: [{
+                "item._id": bookId
+            }, {
+                "order.OrderId": orderId
+            }]
+        });
+
+
+        const books = (await database().collection(databaseConfig.ORDER_COLLECTION).findOne({
+            'orders.OrderId': orderId,
+            'orders.items._id': bookId
+        })).orders.find(o=>String(o.OrderId)===String(orderId)).items;
+
+        let changeOrderState = true;
+        for(let a=0;a<books.length;a++){
+            if(!books[a].packed){
+                changeOrderState = false;
+            }
+        }
+
+        if(changeOrderState){
+            await database().collection(databaseConfig.ORDER_COLLECTION).updateOne({
+                'orders.OrderId': orderId
+            }, {
+                $set: {
+                    "orders.$[order].status": "packed"
+                }
+            }, {
+                arrayFilters: [{
+                    "order.OrderId": orderId
+                }]
+            });
+        }
+
+        return true;
+    }
 };

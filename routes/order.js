@@ -55,17 +55,27 @@ router.put('/cancelOrder', [auth, valid], async(req, res)=>{
 router.get('/deliveries', [auth, valid], async(req, res)=>{
     const zip = req.user.zip;
     const deliveries = await Order.getDeliveries(zip);
-    if(!deliveries) return res.send('No deliveries');
-
+    if(!deliveries) return res.status(400).send('No deliveries');
     res.send(deliveries);
 });
 
 router.get('/orders', [auth, valid], async(req, res)=>{
     const userId = req.user._id;
     const orders = await Order.orders(userId);
-    if(orders.length<=0) return res.send('No orders found');
+    if(orders.length<=0) return res.status(400).send('No orders found');
 
     res.send(orders);
 });
+
+router.put('/packBook', [auth, valid], async(req, res)=>{
+    const checkValues = req.body.orderId && req.body.bookId;
+    if(!checkValues) return res.status(400).send('Invalid credentials');
+
+    const order = await Order.packBook(ObjectId(req.body.orderId), ObjectId(req.body.bookId));
+    if(!order) return res.status(400).send('Invalid credentials.');
+
+    res.send("Book packed");
+});
+
 
 module.exports = router;
