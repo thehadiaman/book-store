@@ -19,6 +19,18 @@ exports.Order = {
             return false;
         }
 
+        if (cart !== null || cart.cart.length > 0) {
+            const items = cart.cart;
+
+            for (let a = 0; a < items.length; a++) {
+                items[a] = {
+                    _id: items[a]._id,
+                    quantity: items[a].quantity
+                };
+            }
+            cart.cart = items;
+        }
+
         const order = await database().collection(databaseConfig.ORDER_COLLECTION).findOne({
             userId: userId
         });
@@ -160,7 +172,7 @@ exports.Order = {
 
         if (order.status === 'delivered' || order.status === 'cancelled') return false;
 
-        database().collection(databaseConfig.CART_COLLECTION).findOneAndUpdate({
+        await database().collection(databaseConfig.CART_COLLECTION).findOneAndUpdate({
             userId: userId
         }, {
             $push: {
@@ -201,10 +213,7 @@ exports.Order = {
             },
             {
                 $match: {
-                    "orders.zip": zip,
-                    "orders.status": {
-                        $ne: "cancelled"
-                    }
+                    "orders.zip": zip
                 }
             },
             {
@@ -292,8 +301,7 @@ exports.Order = {
             },
             {
                 $match: {
-                    "books.seller._id": userId,
-                    "status": 'ordered'
+                    "books.seller._id": userId
                 }
             },
             {
@@ -337,7 +345,8 @@ exports.Order = {
                     },
                     bookTitle: 1,
                     quantity: 1,
-                    packed: 1
+                    packed: 1,
+                    status: 1
                 }
             }
         ]).toArray();
@@ -369,18 +378,17 @@ exports.Order = {
 
 
         const books = (await database().collection(databaseConfig.ORDER_COLLECTION).findOne({
-            'orders.OrderId': orderId,
-            'orders.items._id': bookId
-        })).orders.find(o=>String(o.OrderId)===String(orderId)).items;
+            'orders.OrderId': orderId
+        })).orders.find(o => String(o.OrderId) === String(orderId)).items;
 
         let changeOrderState = true;
-        for(let a=0;a<books.length;a++){
-            if(!books[a].packed){
+        for (let a = 0; a < books.length; a++) {
+            if (!books[a].packed) {
                 changeOrderState = false;
             }
         }
 
-        if(changeOrderState){
+        if (changeOrderState) {
             await database().collection(databaseConfig.ORDER_COLLECTION).updateOne({
                 'orders.OrderId': orderId
             }, {
@@ -395,5 +403,98 @@ exports.Order = {
         }
 
         return true;
+    },
+
+    changeOrderState: async (orderId) => {
+        const order = await database().collection(databaseConfig.ORDER_COLLECTION).aggregate([{
+                $match: {
+                    "orders.OrderId": orderId
+                }
+            },
+            {
+                $unwind: "$orders"
+            },
+            {
+                $match: {
+                    "orders.OrderId": orderId
+                }
+            },
+            {
+                $group: {
+                    _id: '$orders.OrderId',
+                    status: {
+                        $first: '$orders.status'
+                    }
+                }
+            }
+        ]).toArray();
+
+        if (!order || order[0].status === 'ordered' || order[0].status === 'delivered' || order[0].status === 'cancelled') return false;
+
+        const newStatus = (order[0].status === 'packed' && 'shipped') || (order[0].status === 'shipped' && 'delivered');
+
+        if (newStatus === 'delivered') {
+
+            const books = await database().collection(databaseConfig.ORDER_COLLECTION).aggregate([{
+                    $match: {
+                        "orders.OrderId": orderId
+                    }
+                },
+                {
+                    $unwind: "$orders"
+                },
+                {
+                    $match: {
+                        "orders.OrderId": orderId
+                    }
+                },
+                {
+                    $addFields: {
+                        "books": "$orders.items"
+                    }
+                },
+                {
+                    $project: {
+                        "books._id": 1
+                    }
+                },
+                {
+                    $addFields: {
+                        array: []
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        array: {
+                            $push: "$books._id"
+                        }
+                    }
+                }
+            ]).toArray();
+
+            const allBook = await database().collection(databaseConfig.BOOK_COLLECTION).updateMany({
+                _id: {
+                    $in: books[0].array[0]
+                }
+            }, {
+                $inc: {
+                    sales: 1,
+                    stock: -1
+                }
+            });
+        }
+
+        return await database().collection(databaseConfig.ORDER_COLLECTION).updateOne({
+            'orders.OrderId': orderId
+        }, {
+            $set: {
+                "orders.$[order].status": newStatus
+            }
+        }, {
+            arrayFilters: [{
+                "order.OrderId": orderId
+            }]
+        });
     }
 };

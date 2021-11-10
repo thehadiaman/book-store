@@ -28,5 +28,4 @@ exports.Book = {
     deleteBook: (id)=>{
         return database().collection(databaseConfig.BOOK_COLLECTION).findOneAndDelete({_id: id});
     }
-
 };

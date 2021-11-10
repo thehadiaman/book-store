@@ -77,5 +77,13 @@ router.put('/packBook', [auth, valid], async(req, res)=>{
     res.send("Book packed");
 });
 
+router.put('/changeStatus', [auth, valid], async(req, res)=>{
+    if(!req.body.orderId) return res.status(400).send('Invalid credentials.');
+    
+    const order = await Order.changeOrderState(ObjectId(req.body.orderId));
+    if(!order) return res.status(400).send('Invalid credentials.');
+
+    res.send(order);
+});
 
 module.exports = router;

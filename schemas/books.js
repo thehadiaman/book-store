@@ -6,9 +6,9 @@ exports.bookSchema = function(body){
         price: body.price,
         description: body.description,
         discount: body.discount,
-        stock: body.stock,
+        stock: parseInt(body.stock),
         seller: body.seller,
         sales: 0,
         date: Date.now()
-    }
-}
+    };
+};
