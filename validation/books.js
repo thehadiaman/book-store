@@ -12,4 +12,18 @@ const schema = Joi.object({
 
 exports.validate = function(body){
     return schema.validate(body);
-}
+};
+
+exports.rateValidation = function (body) {
+    return Joi.object({
+        rate: Joi.number().min(0).max(5).required()
+    }).validate(body);
+};
+
+exports.contendValidation = function (body) {
+    return Joi.object({
+        bookId: Joi.string().min(1).max(100).required(),
+        heading: Joi.string().min(1).max(500).required(),
+        review: Joi.string().min(1).max(1000).required()
+    }).validate(body);
+};

@@ -9,6 +9,8 @@ exports.bookSchema = function(body){
         stock: parseInt(body.stock),
         seller: body.seller,
         sales: 0,
+        rating: 0,
+        reviews: [],
         date: Date.now()
     };
 };

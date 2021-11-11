@@ -496,5 +496,40 @@ exports.Order = {
                 "order.OrderId": orderId
             }]
         });
+    },
+    
+    isDelivered: async(userId, bookId)=>{
+        const book = await database().collection(databaseConfig.ORDER_COLLECTION).aggregate([
+            {
+                $match: {
+                    userId: ObjectId(userId)
+                }
+            },
+            {
+                $unwind: "$orders"
+            },
+            {
+                $addFields: {
+                    orders: "$orders.items",
+                    status: "$orders.status"
+                }
+            },
+            {
+                $match: {
+                    status: 'delivered'
+                }
+            },
+            {
+                $unwind: "$orders"
+            },
+            {
+                $match: {
+                    "orders._id": ObjectId(bookId)
+                }
+            }
+        ]).toArray();
+
+        return book.length>0?true: false;
+
     }
 };
