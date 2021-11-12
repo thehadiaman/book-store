@@ -10,7 +10,7 @@ const {
 } = require("./order");
 const {
     ObjectId
-} = require("bson");
+} = require("mongodb");
 
 
 exports.Book = {
@@ -39,9 +39,10 @@ exports.Book = {
         });
     },
 
-    deleteBook: (id) => {
-        return database().collection(databaseConfig.BOOK_COLLECTION).findOneAndDelete({
-            _id: id
+    deleteBook: (books, userId) => {
+        return database().collection(databaseConfig.BOOK_COLLECTION).deleteMany({
+            "seller._id": userId,
+            _id: {$in: books}
         });
     },
 
@@ -195,9 +196,7 @@ exports.Book = {
     },
 
     myReview: async (userId, bookId) => {
-
         const delivered = await Order.isDelivered(userId, bookId);
-
         return !delivered;
     },
 
@@ -238,5 +237,4 @@ exports.Book = {
         ]).toArray())[0];
         return ratings;
     }
-
 };

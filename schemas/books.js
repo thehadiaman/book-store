@@ -5,7 +5,6 @@ exports.bookSchema = function(body){
         image: body.image,
         price: body.price,
         description: body.description,
-        discount: body.discount,
         stock: parseInt(body.stock),
         seller: body.seller,
         sales: 0,

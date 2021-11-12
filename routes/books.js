@@ -26,6 +26,8 @@ router.get('/findByName', [auth, seller, valid] ,async(req, res)=>{
 });
 
 router.get('/:id', async(req, res)=>{
+    const checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
+    if(!checkForHexRegExp.test(req.params.id)) return res.status(400).send('Invalid ObjectId.');
     const book = await Book.getBook({_id: ObjectId(req.params.id)});
     res.send(book);
 });
@@ -41,15 +43,15 @@ router.post('/', [auth, valid, seller], async(req, res)=>{
         _id: req.user._id,
         name: req.user.name
     };
-    await Book.saveBook(_.pick(req.body, ['title', 'image', 'author', 'price', 'stock', 'discount', 'seller', 'sales', 'description']));
+    await Book.saveBook(_.pick(req.body, ['title', 'image', 'author', 'price', 'stock', 'seller', 'sales', 'description']));
     res.send(`"${req.body.title}" saved.`);
 });
 
 router.put('/:id', [auth, valid, seller], async(req, res)=>{
 
-    const book = await Book.getBook({_id: req.params.id});
+    const book = await Book.getBook({_id: ObjectId(req.params.id)});
 
-    const seller = book.seller._id === req.user._id;
+    const seller = String(book.seller._id) === String(req.user._id);
     if(!seller) return res.status(401).send('Unauthorized action.');
 
     const {error} = validate(req.body);
@@ -59,21 +61,21 @@ router.put('/:id', [auth, valid, seller], async(req, res)=>{
         _id: req.user._id,
         name: req.user.name
     };
-    await Book.updateBook(ObjectId(req.params.id), _.pick(req.body, ['title', 'author', 'price', 'stock', 'seller', 'discount']));
+    await Book.updateBook(ObjectId(req.params.id), _.pick(req.body, ['title', 'author', 'price', 'stock', 'seller']));
     res.send('Book saved.');
 });
 
-router.delete('/:id', [auth, valid, seller], async(req, res)=>{
-    if(!req.body.password) return res.status(400).send('Invalid password.');
+router.delete('/', [auth, valid, seller], async(req, res)=>{
+    if(req.body[0]===undefined) return res.status(400).send('Invalid credentials.');
 
-    const seller = String(book.seller._id) === String(req.user._id);
-    if(!seller) return res.status(401).send('Unauthorized action.');
+    const books = [];
+    for(let item in req.body){
+        books[item] = ObjectId(req.body[item]);
+    }
 
-    const validPassword = await bcrypt.compare(req.body.password, req.user.password);
-    if(!validPassword) return res.status(400).send('Invalid password.');
-
-    await Book.deleteBook(ObjectId(req.params.id));
-    res.send(`"${book.title}" id deleted.`);
+    const data = await Book.deleteBook(books, req.user._id);
+    console.log(data);
+    res.send(`Selected books have been deleted.`);
 });
 
 router.put('/favorite/:id', [auth, valid], async(req, res)=>{
@@ -123,7 +125,6 @@ router.get('/review/:bookId', async(req, res)=>{
 
 router.get('/myReview/:bookId', [auth, valid], async(req, res)=>{
     const review = await Book.myReview(req.user._id, req.params.bookId);
-
     if(!review) return res.send(false);
 
     res.send(true);
@@ -133,7 +134,7 @@ router.get('/myRating/id/:bookId', [auth, valid], async(req, res)=>{
     if(!req.params.bookId) return res.status(400).send('Invalid credentials');
 
     const ratings = await Book.getMyRating(req.user._id, req.params.bookId);
-    if(!ratings.rating) return res.send("0");
+    if(!ratings) return res.send("0");
 
     res.send(String(ratings.rating?ratings.rating:0));
 });
