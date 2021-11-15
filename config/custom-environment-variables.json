@@ -1,5 +1,6 @@
 {
   "EMAIL_API": "EMAIL_API",
   "EMAIL": "EMAIL",
-  "jswPrivateKey": "SECRET_KEY"
+  "jswPrivateKey": "SECRET_KEY",
+  "DATABASE": "DB_URI"
 }
