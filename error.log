@@ -66,3 +66,93 @@
   message: 'Error',
   timestamp: '2021-11-14T14:25:11.818Z'
 }
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:31:22.443Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:32:10.493Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:33:19.665Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:34:16.965Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:34:53.188Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:35:08.417Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:35:28.419Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:35:41.698Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:36:16.332Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:38:03.467Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:38:22.885Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:38:36.622Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:38:44.052Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:39:46.472Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:40:51.719Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:41:41.023Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:42:20.699Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-15T16:43:26.629Z'
+}

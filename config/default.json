@@ -1,5 +1,6 @@
 {
   "EMAIL_API": "",
   "EMAIL": "",
-  "jswPrivateKey": ""
+  "jswPrivateKey": "",
+  "NODE_ENV": "development"
 }
