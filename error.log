@@ -1,0 +1,68 @@
+{
+  level: 'error',
+  message: 'Error',
+  time: Format { options: {} },
+  label: 'Error',
+  timestamp: '2021-11-14T14:16:13.932Z'
+}
+{
+  level: 'error',
+  message: 'Error',
+  label: 'Error',
+  timestamp: '2021-11-14T14:16:34.896Z'
+}
+{
+  level: 'error',
+  message: 'Error',
+  timestamp: '2021-11-14T14:16:51.464Z'
+}
+{
+  level: 'error',
+  message: 'Error',
+  timestamp: '2021-11-14T14:16:58.025Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:17:34.983Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:19:12.090Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:19:14.206Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:19:17.650Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:19:20.313Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:19:50.783Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:21:13.020Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:21:26.492Z'
+}
+{
+  level: '\x1B[31merror\x1B[39m',
+  message: 'Error',
+  timestamp: '2021-11-14T14:25:11.818Z'
+}

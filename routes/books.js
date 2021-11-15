@@ -74,7 +74,6 @@ router.delete('/', [auth, valid, seller], async(req, res)=>{
     }
 
     const data = await Book.deleteBook(books, req.user._id);
-    console.log(data);
     res.send(`Selected books have been deleted.`);
 });
 
