@@ -28,7 +28,7 @@ router.get('/myOrders', [auth, valid],  async(req, res)=>{
     const userId = req.user._id;
 
     const isOrder = await Order.checkOrder(userId);
-    if(!isOrder || isOrder.orders.length<=0) return res.status(401).send('No orders found.');
+    if(!isOrder || isOrder.orders.length<=0) return res.send('No orders found.');
 
     const order = await Order.getMyOrders(userId);
     res.send(order);
@@ -58,7 +58,7 @@ router.get('/deliveries', [auth, valid], async(req, res)=>{
 router.get('/orders', [auth, valid], async(req, res)=>{
     const userId = req.user._id;
     const orders = await Order.orders(userId);
-    if(orders.length<=0) return res.status(400).send('No orders found');
+    if(orders.length<=0) return res.send('No orders found');
 
     res.send(orders);
 });

@@ -40,7 +40,7 @@ exports.Cart = {
     getCartCount: async(userId)=>{
 
         const cart = await database().collection(databaseConfig.CART_COLLECTION).findOne({userId: userId});
-        if(!cart) return 0;
+        if(!cart) return {count: 0};
 
         return await database().collection(databaseConfig.CART_COLLECTION).aggregate([
             {

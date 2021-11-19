@@ -77,17 +77,6 @@ router.delete('/', [auth, valid, seller], async(req, res)=>{
     res.send(`Selected books have been deleted.`);
 });
 
-router.put('/favorite/:id', [auth, valid], async(req, res)=>{
-    const favorite = req.user.favorites.includes(req.params.id);
-    if(favorite) {
-        await User.removeFromFavorite(req.user._id, req.params.id);
-        return res.send('Removed from favorites.');
-    }
-
-    await User.addToFavorite(req.user._id, req.params.id);
-    res.send('Added to favorites.');
-});
-
 router.post('/review', [auth, valid], async(req, res)=>{
     const validRequest = req.body.bookId && req.body.heading || req.body.review;
     if(!validRequest) return res.status(400).send('Invalid credentials.');
